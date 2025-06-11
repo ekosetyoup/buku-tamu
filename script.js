@@ -1,23 +1,36 @@
 // Konfigurasi Supabase
 const { createClient } = supabase;
-const supa = createClient('https://ijlwxttwdyslscgopann.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqbHd4dHR3ZHlzbHNjZ29wYW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MjQ4NzQsImV4cCI6MjA2NTIwMDg3NH0.EiwUAyT6chVNnlzm-RoC1kcPrnV-Mdgw3BEAQ16lGi8');
+const supa = createClient(
+  'https://ijlwxttwdyslscgopann.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqbHd4dHR3ZHlzbHNjZ29wYW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MjQ4NzQsImV4cCI6MjA2NTIwMDg3NH0.EiwUAyT6chVNnlzm-RoC1kcPrnV-Mdgw3BEAQ16lGi8'
+);
 
 // Elemen DOM
 const form = document.getElementById('formTamu');
 const daftar = document.getElementById('daftarTamu');
 const inputNama = document.getElementById('nama');
 const inputPesan = document.getElementById('pesan');
-const inputCari = document.getElementById('cariNama');
+const inputCari = document.getElementById('cariNama'); // Pastikan input ini ada di HTML
 
 let dataTamu = [];
 
 // Ambil dan tampilkan data
 async function muatTamu(filter = '') {
-  let query = supa.from('tamu').select('*').order('created_at', { ascending: false });
+  let query = supa.from('tamu').select('*');
+
+  // Coba urutkan berdasarkan created_at jika kolomnya ada
+  try {
+    query = query.order('created_at', { ascending: false });
+  } catch {}
+
   if (filter) query = query.ilike('nama', `%${filter}%`);
 
   const { data, error } = await query;
-  if (error) return alert('Gagal mengambil data');
+  if (error) {
+    console.error(error.message);
+    alert('Gagal mengambil data: ' + error.message);
+    return;
+  }
 
   dataTamu = data;
   tampilkanTamu();
@@ -44,7 +57,10 @@ form.addEventListener('submit', async e => {
   if (!nama || !pesan) return;
 
   const { error } = await supa.from('tamu').insert({ nama, pesan });
-  if (error) return alert('Gagal menambahkan data');
+  if (error) {
+    console.error(error.message);
+    return alert('Gagal menambahkan data: ' + error.message);
+  }
 
   form.reset();
   muatTamu();
@@ -55,7 +71,11 @@ async function hapusTamu(id) {
   if (!confirm('Yakin ingin menghapus?')) return;
 
   const { error } = await supa.from('tamu').delete().eq('id', id);
-  if (error) return alert('Gagal menghapus');
+  if (error) {
+    console.error(error.message);
+    return alert('Gagal menghapus: ' + error.message);
+  }
+
   muatTamu();
 }
 
@@ -67,15 +87,22 @@ function editTamu(id) {
   if (!namaBaru || !pesanBaru) return;
 
   supa.from('tamu').update({ nama: namaBaru, pesan: pesanBaru }).eq('id', id)
-    .then(() => muatTamu())
-    .catch(() => alert('Gagal mengubah'));
+    .then(({ error }) => {
+      if (error) {
+        console.error(error.message);
+        return alert('Gagal mengubah: ' + error.message);
+      }
+      muatTamu();
+    });
 }
 
 // Cari tamu
-inputCari.addEventListener('input', () => {
-  const kata = inputCari.value.trim();
-  muatTamu(kata);
-});
+if (inputCari) {
+  inputCari.addEventListener('input', () => {
+    const kata = inputCari.value.trim();
+    muatTamu(kata);
+  });
+}
 
 // Load awal
 muatTamu();
