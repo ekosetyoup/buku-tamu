@@ -1,24 +1,20 @@
-// Konfigurasi Supabase
 const { createClient } = supabase;
 const supa = createClient(
   'https://ijlwxttwdyslscgopann.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqbHd4dHR3ZHlzbHNjZ29wYW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MjQ4NzQsImV4cCI6MjA2NTIwMDg3NH0.EiwUAyT6chVNnlzm-RoC1kcPrnV-Mdgw3BEAQ16lGi8'
 );
 
-// Elemen DOM
 const form = document.getElementById('formTamu');
 const daftar = document.getElementById('daftarTamu');
 const inputNama = document.getElementById('nama');
 const inputPesan = document.getElementById('pesan');
-const inputCari = document.getElementById('cariNama'); // Pastikan input ini ada di HTML
+const inputCari = document.getElementById('cariNama');
 
 let dataTamu = [];
 
-// Ambil dan tampilkan data
 async function muatTamu(filter = '') {
   let query = supa.from('tamu').select('*');
 
-  // Coba urutkan berdasarkan created_at jika kolomnya ada
   try {
     query = query.order('created_at', { ascending: false });
   } catch {}
@@ -49,7 +45,6 @@ function tampilkanTamu() {
   });
 }
 
-// Tambah data
 form.addEventListener('submit', async e => {
   e.preventDefault();
   const nama = inputNama.value.trim();
@@ -66,7 +61,6 @@ form.addEventListener('submit', async e => {
   muatTamu();
 });
 
-// Hapus data
 async function hapusTamu(id) {
   if (!confirm('Yakin ingin menghapus?')) return;
 
@@ -79,7 +73,6 @@ async function hapusTamu(id) {
   muatTamu();
 }
 
-// Edit data
 function editTamu(id) {
   const tamu = dataTamu.find(x => x.id === id);
   const namaBaru = prompt('Ubah nama:', tamu.nama);
@@ -96,7 +89,6 @@ function editTamu(id) {
     });
 }
 
-// Cari tamu
 if (inputCari) {
   inputCari.addEventListener('input', () => {
     const kata = inputCari.value.trim();
@@ -104,5 +96,4 @@ if (inputCari) {
   });
 }
 
-// Load awal
 muatTamu();
